@@ -509,9 +509,26 @@
   function useGeolocation(onFail, opts){
     if(!navigator.geolocation){ onFail && onFail(); return; }
     if(!(opts && opts.silent)) statusEl.textContent = "Finding your location…";
+
+    // iOS can silently hang here forever in a home-screen "standalone" app
+    // (neither callback nor its own timeout fires), so run our own watchdog
+    // on top of the browser's and never let the UI wait indefinitely.
+    var settled = false;
+    var watchdog = setTimeout(function(){
+      if(settled) return;
+      settled = true;
+      onFail && onFail();
+    }, 9000);
+
     navigator.geolocation.getCurrentPosition(function(pos){
+      if(settled) return;
+      settled = true;
+      clearTimeout(watchdog);
       fetchWeather({ lat: pos.coords.latitude.toFixed(3), lon: pos.coords.longitude.toFixed(3), source: "geo" }, opts);
     }, function(){
+      if(settled) return;
+      settled = true;
+      clearTimeout(watchdog);
       onFail && onFail();
     }, { timeout: 8000, maximumAge: 15 * 60 * 1000 });
   }
