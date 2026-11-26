@@ -129,6 +129,7 @@
     font-variant-numeric:tabular-nums;
   }
   .weather.hidden, .weather.loading .weather-loaded{display:none;}
+  .weather:not(.loading) .weather-status{display:none;}
   .weather-status{font-size:19px;color:var(--fg-dim);}
   .weather.loading .weather-status{animation:statusPulse 1.4s ease-in-out infinite;}
   @keyframes statusPulse{0%,100%{opacity:0.5;}50%{opacity:1;}}
